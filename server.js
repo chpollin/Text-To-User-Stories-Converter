@@ -1,4 +1,5 @@
-// server.js
+// server.js (Optional - Not needed for GitHub Pages)
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -10,13 +11,12 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static('public')); // Serve static files from the 'public' directory
 
 app.post('/api/extract', async (req, res) => {
     try {
         const { prompt } = req.body;
-        
-        // Updated API call to use chat/completions
+
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -24,11 +24,11 @@ app.post('/api/extract', async (req, res) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: "gpt-3.5-turbo",  // Using GPT-3.5-turbo as the base model
+                model: "gpt-3.5-turbo",
                 messages: [
                     {
                         role: "system",
-                        content: "You are an expert at extracting user requirements from historical texts and converting them into user stories."
+                        content: "Sie sind ein Experte darin, Benutzeranforderungen aus historischen Texten zu extrahieren und in User Stories zu verwandeln."
                     },
                     {
                         role: "user",
@@ -36,34 +36,31 @@ app.post('/api/extract', async (req, res) => {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 1500,
-                response_format: { type: "text" }  // Explicitly requesting text format
+                max_tokens: 1500
             })
         });
 
         const data = await response.json();
 
         if (data.error) {
-            console.error('OpenAI API Error:', data.error);
+            console.error('OpenAI API Fehler:', data.error);
             return res.status(500).json({ error: data.error.message });
         }
 
-        // Updated to correctly access the response from chat completion
         if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-            console.error('Unexpected API response:', data);
-            return res.status(500).json({ error: 'No response from OpenAI' });
+            console.error('Unerwartete API-Antwort:', data);
+            return res.status(500).json({ error: 'Keine Antwort von OpenAI' });
         }
 
-        // Extract the content from the message
         res.json({ text: data.choices[0].message.content });
 
     } catch (error) {
-        console.error('Server error:', error);
+        console.error('Serverfehler:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server läuft auf Port ${PORT}`);
 });

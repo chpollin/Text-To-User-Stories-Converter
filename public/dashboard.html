@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - User Stories und Epics verwalten</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Include Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard</h1>
+        <h2 class="subtitle">Verwalten Sie Ihre User Stories und Epics</h2>
+
+        <!-- Navigation Back to Main Page -->
+        <div class="navigation">
+            <a href="index.html">Zurück zum Konverter</a>
+        </div>
+
+        <!-- Visualization Section -->
+        <div class="visualization-section">
+            <h2>Epics und User Stories Visualisierung</h2>
+            <canvas id="epicChart"></canvas>
+        </div>
+
+        <!-- Epics Section -->
+        <div class="epics-section">
+            <h3>Epics</h3>
+            <ul id="epicList" class="epic-list"></ul>
+            <input type="text" id="newEpicInput" placeholder="Neues Epic hinzufügen">
+            <button id="addEpicButton">Epic hinzufügen</button>
+        </div>
+
+        <!-- User Stories Section -->
+        <div class="stories-section">
+            <h3>User Stories</h3>
+            <select id="epicFilter">
+                <option value="">-- Alle Epics --</option>
+            </select>
+            <div id="storiesContainer"></div>
+        </div>
+    </div>
+    <script src="dashboard.js"></script>
+</body>
+</html>

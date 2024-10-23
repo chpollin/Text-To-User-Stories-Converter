@@ -1,18 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Historical Document to User Stories</title>
+    <title>Historische Texte zu User Stories</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Include a library for visualization (e.g., Chart.js or D3.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Historical Document to User Stories</h1>
-    <textarea id="documentInput" placeholder="Paste your historical document here" rows="15" cols="80"></textarea>
-    <br>
-    <button id="processButton">Extract User Stories</button>
-    <h2>User Stories</h2>
-    <div id="userStoriesOutput"></div>
+    <div class="container">
+        <h1>Konverter: Historische Texte zu User Stories</h1>
+        <h2 class="subtitle">Analysieren Sie historische Texte aus verschiedenen Forschungsansätzen</h2>
 
+        <!-- API Key Section -->
+        <div class="api-key-section" id="apiKeySection">
+            <h3>OpenAI API-Schlüssel</h3>
+            <input 
+                type="password" 
+                id="apiKeyInput" 
+                class="api-key-input"
+                placeholder="Geben Sie Ihren OpenAI API-Schlüssel ein"
+            >
+            <button id="toggleApiKey" class="toggle-button">Anzeigen</button>
+            <div class="api-info">
+                Ihr API-Schlüssel wird nur temporär im Speicher Ihres Browsers gespeichert und nie weitergegeben.
+                <br>
+                Holen Sie Ihren API-Schlüssel unter: <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI API-Schlüssel</a>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <h2>Historisches Dokument eingeben</h2>
+            <input type="file" id="fileInput" accept=".txt">
+            <span id="fileName"></span>
+            <textarea 
+                id="documentInput" 
+                placeholder="Fügen Sie hier Ihren historischen Text ein..."
+                rows="10"></textarea>
+            <button id="processButton">User Stories extrahieren</button>
+            <button id="clearButton">Eingabe löschen</button>
+        </div>
+
+        <!-- Assign to Epic Section -->
+        <div class="epic-assignment">
+            <h3>Epics verwalten</h3>
+            <input type="text" id="epicInput" placeholder="Epic Name eingeben oder auswählen">
+            <select id="epicSelect">
+                <option value="">-- Wählen Sie ein Epic --</option>
+            </select>
+            <button id="addEpicButton">Epic hinzufügen/auswählen</button>
+        </div>
+
+        <!-- Output Section -->
+        <div class="output-section">
+            <h2>Generierte User Stories</h2>
+            <div id="userStoriesOutput" class="output-box"></div>
+            <button id="copyButton">User Stories kopieren</button>
+            <button id="exportButton">User Stories herunterladen (TXT)</button>
+            <button id="exportJSONButton">User Stories als JSON exportieren</button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="spinner hidden"></div>
+
+        <!-- Visualization Section -->
+        <div class="visualization-section">
+            <h2>Epics und User Stories Visualisierung</h2>
+            <canvas id="epicChart"></canvas>
+        </div>
+
+        <!-- Navigation to Dashboard -->
+        <div class="navigation">
+            <a href="dashboard.html">Zum Dashboard</a>
+        </div>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>
