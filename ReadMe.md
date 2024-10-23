@@ -1,1 +1,0 @@
-* i want a LLM used via API to input historical sources and it should return user stories. is that complicated? why? think about it
