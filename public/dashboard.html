@@ -1,89 +1,251 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <!-- Metadata -->
     <meta charset="UTF-8">
-    <title>Dashboard - Forschungsaufgaben verwalten</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Include Chart.js for visualization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - User Stories Generator</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link href="styles.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Main Navigation -->
-    <nav class="main-navigation">
-        <div class="container">
-            <div class="nav-content">
-                <span class="logo">Forschungstext-Analyse</span>
-                <div class="nav-links">
-                    <button class="nav-button" onclick="location.href='index.html'">
-                        <svg class="icon"><use xlink:href="#home"></use></svg>
-                        <span>Start</span>
-                    </button>
-                    <button class="nav-button" onclick="location.href='search.html'">
-                        <svg class="icon"><use xlink:href="#search"></use></svg>
-                        <span>Suche</span>
-                    </button>
-                    <button class="nav-button" onclick="location.href='library.html'">
-                        <svg class="icon"><use xlink:href="#book"></use></svg>
-                        <span>Bibliothek</span>
-                    </button>
-                    <button class="nav-button primary" onclick="location.href='settings.html'">
-                        <svg class="icon"><use xlink:href="#settings"></use></svg>
-                        <span>Einstellungen</span>
-                    </button>
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar bg-white border-end">
+            <div class="d-flex flex-column h-100">
+                <!-- Logo and Branding -->
+                <div class="p-3 border-bottom">
+                    <h5 class="text-primary mb-0">User Stories Generator</h5>
                 </div>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <div class="container">
-        <div class="space-y-6">
-            <!-- Visualization Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Forschungsthemen Visualisierung</h2>
-                </div>
-                <div class="card-content">
-                    <canvas id="epicChart"></canvas>
-                </div>
+                <!-- Navigation Menu -->
+                <ul class="nav flex-column p-3 gap-2">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link d-flex align-items-center">
+                            <svg class="me-2" width="20" height="20" fill="currentColor">
+                                <use xlink:href="#icon-home"></use>
+                            </svg>
+                            Start
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link d-flex align-items-center active" aria-current="page">
+                            <svg class="me-2" width="20" height="20" fill="currentColor">
+                                <use xlink:href="#icon-dashboard"></use>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                </ul>
             </div>
+        </nav>
 
-            <!-- Research Themes Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Forschungsthemen</h2>
-                </div>
-                <div class="card-content">
-                    <div id="epicList" class="epic-list"></div>
-                    <div class="form-group">
-                        <input type="text" id="newEpicInput" class="input" placeholder="Neues Forschungsthema hinzufügen">
-                        <button id="addEpicButton" class="button primary small">Thema hinzufügen</button>
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid py-4">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 mb-0">Dashboard</h1>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="exportAll">
+                            <svg class="me-2" width="16" height="16" fill="currentColor">
+                                <use xlink:href="#icon-export"></use>
+                            </svg>
+                            Alle exportieren
+                        </button>
+                        <a href="index.html" class="btn btn-primary btn-sm">
+                            <svg class="me-2" width="16" height="16" fill="currentColor">
+                                <use xlink:href="#icon-add"></use>
+                            </svg>
+                            Neue Analyse
+                        </a>
                     </div>
                 </div>
-            </div>
 
-            <!-- Research Tasks Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Forschungsaufgaben</h2>
-                </div>
-                <div class="card-content">
-                    <div class="form-group">
-                        <select id="epicFilter" class="input">
-                            <option value="">-- Alle Themen --</option>
-                        </select>
+                <!-- Dashboard Grid -->
+                <div class="row g-4">
+                    <!-- Themes Card -->
+                    <div class="col-12 col-xl-6 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Themen</h5>
+                                    <div class="input-group input-group-sm w-auto">
+                                        <span class="input-group-text bg-transparent border-end-0">
+                                            <svg width="16" height="16" fill="currentColor">
+                                                <use xlink:href="#icon-search"></use>
+                                            </svg>
+                                        </span>
+                                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Themen durchsuchen..." id="themeSearch">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- New Theme Input -->
+                                <div class="mb-4">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="newTheme" placeholder="Neues Thema eingeben">
+                                        <button class="btn btn-outline-secondary" type="button" id="addTheme">
+                                            Hinzufügen
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Theme List -->
+                                <div id="themeList" class="theme-list" aria-live="polite">
+                                    <!-- Themes will be injected here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="storiesContainer"></div>
+
+                    <!-- Chart Card -->
+                    <div class="col-12 col-xl-6 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0">Themen Übersicht</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container" style="position: relative; height:300px;">
+                                    <canvas id="themeChart" aria-label="Themen Visualisierung"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- User Stories Section -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <h5 class="mb-0">User Stories</h5>
+                            <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0">
+                                <label for="themeFilter" class="visually-hidden">Thema filtern</label>
+                                <select class="form-select form-select-sm" id="themeFilter">
+                                    <option value="">Alle Themen</option>
+                                </select>
+                                <label for="storySearch" class="visually-hidden">User Stories durchsuchen</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-transparent border-end-0">
+                                        <svg width="16" height="16" fill="currentColor">
+                                            <use xlink:href="#icon-search"></use>
+                                        </svg>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0 ps-0" placeholder="Stories durchsuchen..." id="storySearch">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="storiesContainer" class="stories-grid" aria-live="polite">
+                            <!-- Stories will be injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toast Container -->
+                <div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true"></div>
+
             </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Lucide Icons -->
-    <svg style="display: none;">
-        <!-- Include icons as in index.html -->
+    <!-- Templates -->
+    <template id="themeCardTemplate">
+        <div class="theme-card bg-white rounded-3 border p-3 mb-3" data-theme="">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="theme-title mb-1"></h6>
+                    <span class="story-count text-muted small"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm btn-edit" type="button" aria-label="Thema bearbeiten">
+                        <svg width="16" height="16" fill="currentColor">
+                            <use xlink:href="#icon-edit"></use>
+                        </svg>
+                        <span class="d-none d-sm-inline ms-1">Bearbeiten</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm btn-delete" type="button" aria-label="Thema löschen">
+                        <svg width="16" height="16" fill="currentColor">
+                            <use xlink:href="#icon-delete"></use>
+                        </svg>
+                        <span class="d-none d-sm-inline ms-1">Löschen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="storyCardTemplate">
+        <div class="story-card bg-white rounded-3 border p-3 mb-3" data-theme="" data-story-id="">
+            <div class="mb-3">
+                <h6 class="story-title mb-2"></h6>
+                <p class="story-text mb-2"></p>
+                <small class="text-muted story-theme d-block"></small>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm btn-edit" type="button" aria-label="User Story bearbeiten">
+                    <svg width="16" height="16" fill="currentColor">
+                        <use xlink:href="#icon-edit"></use>
+                    </svg>
+                    <span class="d-none d-sm-inline ms-1">Bearbeiten</span>
+                </button>
+                <button class="btn btn-danger btn-sm btn-delete" type="button" aria-label="User Story löschen">
+                    <svg width="16" height="16" fill="currentColor">
+                        <use xlink:href="#icon-delete"></use>
+                    </svg>
+                    <span class="d-none d-sm-inline ms-1">Löschen</span>
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- SVG Icons -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <!-- Icons -->
+        <symbol id="icon-home" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4v-7h-6v7h-4a2 2 0 0 1-2-2z"></path>
+        </symbol>
+        <symbol id="icon-dashboard" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+        </symbol>
+        <symbol id="icon-add" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </symbol>
+        <symbol id="icon-export" viewBox="0 0 24 24">
+            <path d="M14 3v4h-4V3h4z"></path>
+            <path d="M5 8h14v12H5z"></path>
+            <path d="M12 12v6"></path>
+        </symbol>
+        <symbol id="icon-search" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </symbol>
+        <symbol id="icon-edit" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </symbol>
+        <symbol id="icon-delete" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+        </symbol>
     </svg>
 
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
     <script src="dashboard.js"></script>
 </body>
 </html>

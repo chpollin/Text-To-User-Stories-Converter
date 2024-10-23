@@ -1,169 +1,244 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <!-- Metadata -->
     <meta charset="UTF-8">
-    <title>Forschungstext-Analyse</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Include Chart.js for visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Include Lucide icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Stories Generator</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="styles.css" rel="stylesheet">
+
+    <!-- Additional Head Content -->
+    <!-- Include any additional CSS or metadata here -->
 </head>
 <body>
-    <!-- Main Navigation -->
-    <nav class="main-navigation">
-        <div class="container">
-            <div class="nav-content">
-                <span class="logo">Forschungstext-Analyse</span>
-                <div class="nav-links">
-                    <button class="nav-button" onclick="location.href='index.html'">
-                        <svg class="icon"><use xlink:href="#home"></use></svg>
-                        <span>Start</span>
-                    </button>
-                    <button class="nav-button" onclick="location.href='search.html'">
-                        <svg class="icon"><use xlink:href="#search"></use></svg>
-                        <span>Suche</span>
-                    </button>
-                    <button class="nav-button" onclick="location.href='library.html'">
-                        <svg class="icon"><use xlink:href="#book"></use></svg>
-                        <span>Bibliothek</span>
-                    </button>
-                    <button class="nav-button primary" onclick="location.href='settings.html'">
-                        <svg class="icon"><use xlink:href="#settings"></use></svg>
-                        <span>Einstellungen</span>
-                    </button>
+    <!-- Main Container -->
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav class="sidebar bg-white border-end">
+            <div class="d-flex flex-column h-100">
+                <!-- Logo and Branding -->
+                <div class="p-3 border-bottom">
+                    <h5 class="text-primary mb-0">User Stories Generator</h5>
+                </div>
+
+                <!-- Navigation Menu -->
+                <ul class="nav nav-pills flex-column p-3 gap-2">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link d-flex align-items-center active" aria-current="page">
+                            <svg class="me-2" width="20" height="20" fill="currentColor">
+                                <use xlink:href="#icon-home"></use>
+                            </svg>
+                            Start
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link d-flex align-items-center">
+                            <svg class="me-2" width="20" height="20" fill="currentColor">
+                                <use xlink:href="#icon-dashboard"></use>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow-1 h-100 overflow-auto bg-light">
+            <div class="container py-4">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-xl-10">
+                        <!-- Header -->
+                        <div class="mb-4">
+                            <h1 class="h3 mb-2">Historischen Text analysieren</h1>
+                            <p class="text-muted">Geben Sie Ihren Text ein, um User Stories zu generieren.</p>
+                        </div>
+
+                        <!-- API Configuration -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0">API Konfiguration</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="apiForm" novalidate>
+                                    <div class="mb-3">
+                                        <label for="apiKey" class="form-label">OpenAI API-Schlüssel</label>
+                                        <input type="password" class="form-control" id="apiKey" placeholder="sk-..." required>
+                                        <div class="form-text">
+                                            Ihr API-Schlüssel wird nur temporär im Speicher Ihres Browsers gespeichert.
+                                            <a href="https://platform.openai.com/account/api-keys" target="_blank" rel="noopener">OpenAI API-Schlüssel</a>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            Bitte geben Sie Ihren API-Schlüssel ein.
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Text Input -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0">Text Eingabe</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="textForm" novalidate>
+                                    <div class="mb-3">
+                                        <label for="documentInput" class="form-label">Historischer Text</label>
+                                        <textarea class="form-control" id="documentInput" rows="8" placeholder="Fügen Sie hier Ihren historischen Text ein..." required></textarea>
+                                        <div class="invalid-feedback">
+                                            Bitte geben Sie einen historischen Text ein.
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Datei hochladen</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <label class="btn btn-outline-secondary mb-0">
+                                                <input type="file" class="d-none" accept=".txt" id="fileInput">
+                                                Datei auswählen
+                                            </label>
+                                            <span class="text-muted" id="fileName"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Theme Selection -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0">Thema</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="themeForm" novalidate>
+                                    <div class="mb-3">
+                                        <label for="epicInput" class="form-label">Neues Thema eingeben</label>
+                                        <input type="text" class="form-control mb-2" id="epicInput" placeholder="Neues Thema eingeben">
+                                        <label for="epicSelect" class="form-label">Oder bestehendes Thema auswählen</label>
+                                        <select class="form-select mb-2" id="epicSelect">
+                                            <option value="">-- Wählen Sie ein bestehendes Thema --</option>
+                                        </select>
+                                        <button class="btn btn-outline-secondary" id="addEpicButton" type="button">
+                                            Thema hinzufügen/auswählen
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" id="generateStories">
+                                <svg class="me-2" width="16" height="16" fill="currentColor">
+                                    <use xlink:href="#icon-generate"></use>
+                                </svg>
+                                User Stories generieren
+                            </button>
+                            <button class="btn btn-outline-secondary" id="clearForm">
+                                <svg class="me-2" width="16" height="16" fill="currentColor">
+                                    <use xlink:href="#icon-clear"></use>
+                                </svg>
+                                Eingabe löschen
+                            </button>
+                        </div>
+
+                        <!-- Results Section -->
+                        <div id="resultsSection" class="mt-4 d-none">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0">Generierte User Stories</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="storiesOutput" class="mb-3 p-3 bg-light rounded" aria-live="polite"></div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-outline-secondary btn-sm" id="copyStories">
+                                            <svg class="me-2" width="16" height="16" fill="currentColor">
+                                                <use xlink:href="#icon-copy"></use>
+                                            </svg>
+                                            Kopieren
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="downloadTxt">
+                                            <svg class="me-2" width="16" height="16" fill="currentColor">
+                                                <use xlink:href="#icon-download"></use>
+                                            </svg>
+                                            Als TXT speichern
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="downloadJson">
+                                            <svg class="me-2" width="16" height="16" fill="currentColor">
+                                                <use xlink:href="#icon-export"></use>
+                                            </svg>
+                                            Als JSON exportieren
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loading Spinner -->
+                        <div id="loadingSpinner" class="position-fixed top-0 start-0 w-100 h-100 d-none">
+                            <div class="w-100 h-100 bg-white bg-opacity-75 d-flex align-items-center justify-content-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Lädt...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toast Container -->
+                        <div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true"></div>
+
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container">
-        <div class="space-y-6">
-            <!-- Input Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Historischen Text analysieren</h2>
-                    <p class="card-description">Geben Sie Ihren Text ein, um Forschungsaufgaben zu generieren.</p>
-                </div>
-                <div class="card-content">
-                    <!-- API Key Section -->
-                    <div class="form-group">
-                        <label for="apiKeyInput">OpenAI API-Schlüssel</label>
-                        <input 
-                            type="password" 
-                            id="apiKeyInput" 
-                            class="input"
-                            placeholder="Geben Sie Ihren OpenAI API-Schlüssel ein"
-                        >
-                        <button id="toggleApiKey" class="button secondary small">Anzeigen</button>
-                        <p class="form-info">
-                            Ihr API-Schlüssel wird nur temporär im Speicher Ihres Browsers gespeichert und nie weitergegeben.
-                            <br>
-                            Holen Sie Ihren API-Schlüssel unter: <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI API-Schlüssel</a>
-                        </p>
-                    </div>
-
-                    <!-- Text Input -->
-                    <div class="form-group">
-                        <label for="documentInput">Historischer Text</label>
-                        <textarea 
-                            id="documentInput" 
-                            class="input"
-                            placeholder="Fügen Sie hier Ihren historischen Text ein..."
-                            rows="10"></textarea>
-                    </div>
-
-                    <!-- File Input -->
-                    <div class="form-group">
-                        <label for="fileInput">Textdatei hochladen</label>
-                        <input type="file" id="fileInput" accept=".txt">
-                        <span id="fileName"></span>
-                    </div>
-
-                    <!-- Epic Assignment -->
-                    <div class="form-group">
-                        <label for="epicInput">Forschungsthema auswählen oder erstellen</label>
-                        <input type="text" id="epicInput" class="input" placeholder="Neues Thema eingeben">
-                        <select id="epicSelect" class="input">
-                            <option value="">-- Wählen Sie ein bestehendes Thema --</option>
-                        </select>
-                        <button id="addEpicButton" class="button secondary small">Thema hinzufügen/auswählen</button>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="form-group">
-                        <button id="processButton" class="button primary">Forschungsaufgaben generieren</button>
-                        <button id="clearButton" class="button secondary">Eingabe löschen</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Output Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Generierte Forschungsaufgaben</h2>
-                </div>
-                <div class="card-content">
-                    <div id="userStoriesOutput" class="output-box"></div>
-                    <div class="form-group">
-                        <button id="copyButton" class="button secondary">Aufgaben kopieren</button>
-                        <button id="exportButton" class="button secondary">Aufgaben herunterladen (TXT)</button>
-                        <button id="exportJSONButton" class="button secondary">Aufgaben als JSON exportieren</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loading Spinner -->
-            <div id="loadingSpinner" class="spinner hidden"></div>
-
-            <!-- Visualization Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Forschungsthemen Visualisierung</h2>
-                </div>
-                <div class="card-content">
-                    <canvas id="epicChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Navigation to Dashboard -->
-            <div class="navigation">
-                <a href="dashboard.html" class="button primary">Zum Dashboard</a>
-            </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Lucide Icons -->
-    <svg style="display: none;">
-        <symbol id="home" viewBox="0 0 24 24">
-            <path d="M3 9.857l9-6 9 6V21H3V9.857z"/>
+    <!-- SVG Icons -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <!-- Home Icon -->
+        <symbol id="icon-home" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4v-7h-6v7h-4a2 2 0 0 1-2-2z"></path>
         </symbol>
-        <symbol id="search" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <!-- Dashboard Icon -->
+        <symbol id="icon-dashboard" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
         </symbol>
-        <symbol id="book" viewBox="0 0 24 24">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M4 4v13.5"/>
-            <path d="M20 4v13.5"/>
-            <path d="M6.5 17A2.5 2.5 0 0 1 4 19.5"/>
+        <!-- Generate Icon -->
+        <symbol id="icon-generate" viewBox="0 0 24 24">
+            <path d="M12 5v14m-7-7h14"></path>
         </symbol>
-        <symbol id="settings" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a1.65 1.65 0 0 1-2.34 2.34l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/>
-            <path d="M4.6 9a1.65 1.65 0 0 1 .33-1.82l.06-.06a1.65 1.65 0 1 1 2.34 2.34l-.06.06A1.65 1.65 0 0 0 4.6 9z"/>
-            <path d="M12 2v2"/>
-            <path d="M12 20v2"/>
-            <path d="M4.93 4.93l1.41 1.41"/>
-            <path d="M17.66 17.66l1.41 1.41"/>
-            <path d="M2 12h2"/>
-            <path d="M20 12h2"/>
-            <path d="M4.93 19.07l1.41-1.41"/>
-            <path d="M17.66 6.34l1.41-1.41"/>
+        <!-- Clear Icon -->
+        <symbol id="icon-clear" viewBox="0 0 24 24">
+            <path d="M18 6L6 18M6 6l12 12"></path>
+        </symbol>
+        <!-- Copy Icon -->
+        <symbol id="icon-copy" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </symbol>
+        <!-- Download Icon -->
+        <symbol id="icon-download" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+        </symbol>
+        <!-- Export Icon -->
+        <symbol id="icon-export" viewBox="0 0 24 24">
+            <path d="M14 3v4h-4V3h4z"></path>
+            <path d="M5 8h14v12H5z"></path>
+            <path d="M12 12v6"></path>
         </symbol>
     </svg>
 
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
     <script src="app.js"></script>
 </body>
 </html>

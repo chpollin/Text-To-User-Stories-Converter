@@ -1,60 +1,162 @@
 // app.js
 
+// Variables
 let apiKey = '';
 let epics = JSON.parse(localStorage.getItem('epics')) || [];
 let currentEpic = '';
 
-// Event listener for the "Extract User Stories" button
-document.getElementById('processButton').addEventListener('click', () => {
-    const documentText = document.getElementById('documentInput').value.trim();
-    apiKey = document.getElementById('apiKeyInput').value.trim();
+// DOM Elements
+const apiKeyInput = document.getElementById('apiKey');
+const documentInput = document.getElementById('documentInput');
+const processButton = document.getElementById('generateStories');
+const clearButton = document.getElementById('clearForm');
+const fileInput = document.getElementById('fileInput');
+const fileNameDisplay = document.getElementById('fileName');
+const epicInput = document.getElementById('epicInput');
+const epicSelect = document.getElementById('epicSelect');
+const addEpicButton = document.getElementById('addEpicButton');
+const userStoriesOutput = document.getElementById('storiesOutput');
+const copyButton = document.getElementById('copyStories');
+const exportButton = document.getElementById('downloadTxt');
+const exportJSONButton = document.getElementById('downloadJson');
+const loadingSpinner = document.getElementById('loadingSpinner');
+const resultsSection = document.getElementById('resultsSection');
+const toastContainer = document.querySelector('.toast-container');
 
-    if (apiKey === '') {
-        alert('Bitte geben Sie Ihren OpenAI API-Schlüssel ein.');
-        return;
-    }
+// Initialize
+loadEpics();
 
-    if (documentText === '') {
-        alert('Bitte geben Sie ein historisches Dokument ein.');
-        return;
-    }
+// Event Listeners
+processButton.addEventListener('click', processDocument);
+clearButton.addEventListener('click', clearInputs);
+fileInput.addEventListener('change', handleFileUpload);
+addEpicButton.addEventListener('click', addOrSelectEpic);
+copyButton.addEventListener('click', copyUserStories);
+exportButton.addEventListener('click', exportUserStoriesTXT);
+exportJSONButton.addEventListener('click', exportUserStoriesJSON);
 
-    if (currentEpic === '') {
-        alert('Bitte wählen oder erstellen Sie ein Epic aus.');
-        return;
-    }
+// Functions
 
-    extractUserStories(documentText);
-});
+// Show Toast Notification
+function showToast(message, type = 'success') {
+  const toastEl = document.createElement('div');
+  toastEl.className = `toast align-items-center text-bg-${type} border-0 show`;
+  toastEl.setAttribute('role', 'alert');
+  toastEl.setAttribute('aria-live', 'assertive');
+  toastEl.setAttribute('aria-atomic', 'true');
 
-// Show/Hide API Key functionality
-document.getElementById('toggleApiKey').addEventListener('click', () => {
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    const toggleButton = document.getElementById('toggleApiKey');
-    if (apiKeyInput.type === 'password') {
-        apiKeyInput.type = 'text';
-        toggleButton.textContent = 'Ausblenden';
-    } else {
-        apiKeyInput.type = 'password';
-        toggleButton.textContent = 'Anzeigen';
-    }
-});
+  const toastBody = document.createElement('div');
+  toastBody.className = 'd-flex';
 
-// Function to extract user stories from the historical text
+  const toastContent = document.createElement('div');
+  toastContent.className = 'toast-body';
+  toastContent.textContent = message;
+
+  const closeButton = document.createElement('button');
+  closeButton.className = 'btn-close me-2 m-auto';
+  closeButton.setAttribute('type', 'button');
+  closeButton.setAttribute('data-bs-dismiss', 'toast');
+  closeButton.setAttribute('aria-label', 'Close');
+
+  toastBody.appendChild(toastContent);
+  toastBody.appendChild(closeButton);
+  toastEl.appendChild(toastBody);
+  toastContainer.appendChild(toastEl);
+
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+
+  toastEl.addEventListener('hidden.bs.toast', () => {
+    toastEl.remove();
+  });
+}
+
+// Load Epics into Select Dropdown
+function loadEpics() {
+  epics = JSON.parse(localStorage.getItem('epics')) || [];
+  epicSelect.innerHTML = '<option value="">-- Wählen Sie ein bestehendes Thema --</option>';
+  epics.forEach(epic => {
+    const option = document.createElement('option');
+    option.value = epic;
+    option.textContent = epic;
+    epicSelect.appendChild(option);
+  });
+}
+
+// Add or Select Epic
+function addOrSelectEpic() {
+  const epicName = epicInput.value.trim() || epicSelect.value;
+  if (epicName === '') {
+    showToast('Bitte geben Sie ein Thema ein oder wählen Sie eines aus.', 'danger');
+    return;
+  }
+
+  currentEpic = epicName;
+
+  if (!epics.includes(epicName)) {
+    epics.push(epicName);
+    localStorage.setItem('epics', JSON.stringify(epics));
+    loadEpics();
+    showToast(`Thema "${currentEpic}" hinzugefügt.`);
+  } else {
+    showToast(`Thema "${currentEpic}" ausgewählt.`);
+  }
+
+  epicInput.value = '';
+  epicSelect.value = currentEpic;
+}
+
+// Process Document to Generate User Stories
+async function processDocument() {
+  const documentText = documentInput.value.trim();
+  apiKey = apiKeyInput.value.trim();
+
+  if (apiKey === '') {
+    showToast('Bitte geben Sie Ihren OpenAI API-Schlüssel ein.', 'danger');
+    apiKeyInput.focus();
+    return;
+  }
+
+  if (documentText === '') {
+    showToast('Bitte geben Sie einen historischen Text ein.', 'danger');
+    documentInput.focus();
+    return;
+  }
+
+  if (currentEpic === '') {
+    showToast('Bitte wählen oder erstellen Sie ein Thema aus.', 'danger');
+    epicInput.focus();
+    return;
+  }
+
+  userStoriesOutput.textContent = '';
+  resultsSection.classList.add('d-none');
+  loadingSpinner.classList.remove('d-none');
+
+  try {
+    const userStories = await extractUserStories(documentText);
+    displayUserStories(userStories);
+    saveUserStories(userStories);
+    showToast('User Stories erfolgreich generiert.', 'success');
+    resultsSection.classList.remove('d-none');
+  } catch (error) {
+    showToast('Fehler beim Generieren der User Stories.', 'danger');
+    console.error(error);
+  } finally {
+    loadingSpinner.classList.add('d-none');
+  }
+}
+
+// Extract User Stories using OpenAI API
 async function extractUserStories(documentText) {
-    const outputElement = document.getElementById('userStoriesOutput');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    outputElement.textContent = '';
-    loadingSpinner.classList.remove('hidden');
+  const maxChunkSize = 2000; // Adjust based on the API's token limit
+  const chunks = splitTextIntoChunks(documentText, maxChunkSize);
 
-    try {
-        const maxChunkSize = 2000; // Adjust based on the API's token limit
-        const chunks = splitTextIntoChunks(documentText, maxChunkSize);
+  const userStories = [];
 
-        // Process chunks in parallel for better performance
-        const promises = chunks.map(chunk => {
-            const prompt = `
-Analysieren Sie den folgenden historischen Text aus der Perspektive verschiedener historischer Forschungsansätze. Erstellen Sie User Stories im Format: "Als [spezifisches historisches Forschungsfeld] möchte ich [konkrete Untersuchung/Analyse], um [wissenschaftliches Forschungsziel] zu erreichen."
+  for (const chunk of chunks) {
+    const prompt = `
+Analysieren Sie den folgenden historischen Text aus der Perspektive verschiedener historischer Forschungsansätze. Erstellen Sie User Stories im Format: "Als [spezifisches historisches Forschungsfeld] möchte ich [konkretes Ziel], um [Nutzen] zu erreichen."
 
 Mögliche Forschungsperspektiven sind:
 - Wirtschaftshistoriker (Fokus auf Handelsbeziehungen, Preise, Wirtschaftsstrukturen)
@@ -76,246 +178,173 @@ Berücksichtigen Sie die folgenden Aspekte:
 Historischer Text:
 ${chunk}
 `;
-            return callOpenAIAPI(prompt);
-        });
 
-        const responses = await Promise.all(promises);
-        const allUserStories = responses.filter(Boolean).join('\n');
-
-        // Split the combined user stories into an array
-        const userStoriesArray = allUserStories.split('\n').filter(line => line.trim() !== '');
-
-        // Number the user stories
-        const numberedUserStories = userStoriesArray.map((story, index) => `${index + 1}. ${story.trim()}`).join('\n\n');
-
-        outputElement.textContent = numberedUserStories || 'Keine User Stories gefunden.';
-
-        // Store user stories in localStorage under the current epic
-        const epicData = JSON.parse(localStorage.getItem('epicData')) || {};
-        epicData[currentEpic] = (epicData[currentEpic] || []).concat(userStoriesArray);
-        localStorage.setItem('epicData', JSON.stringify(epicData));
-
-        // Update visualization
-        updateVisualization();
-
-    } catch (error) {
-        outputElement.textContent = 'Fehler: ' + error.message;
-    } finally {
-        loadingSpinner.classList.add('hidden');
-    }
-}
-
-// Function to call the OpenAI API
-async function callOpenAIAPI(prompt) {
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: [
-                    {
-                        role: "user",
-                        content: prompt
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 1500
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || 'Fehler beim Aufruf der OpenAI API');
-        }
-
-        const data = await response.json();
-        return data.choices[0].message.content.trim();
+      const response = await callOpenAIAPI(prompt);
+      const stories = response.split('\n').filter(line => line.trim() !== '');
+      userStories.push(...stories);
     } catch (error) {
-        console.error('Fehler beim Aufruf der OpenAI API:', error);
-
-        // Clear API key if it's invalid
-        if (error.message.includes('Invalid API key')) {
-            apiKey = '';
-        }
-
-        throw error;
+      throw error;
     }
+  }
+
+  return userStories;
 }
 
-// Function to split the text into smaller chunks
+// Call OpenAI API
+async function callOpenAIAPI(prompt) {
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1500
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Fehler beim Aufruf der OpenAI API');
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content.trim();
+  } catch (error) {
+    console.error('Fehler beim Aufruf der OpenAI API:', error);
+    throw error;
+  }
+}
+
+// Split Text into Chunks
 function splitTextIntoChunks(text, maxChunkSize) {
-    const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text];
-    const chunks = [];
-    let chunk = '';
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  const chunks = [];
+  let chunk = '';
 
-    for (const sentence of sentences) {
-        if ((chunk + sentence).length > maxChunkSize) {
-            chunks.push(chunk);
-            chunk = sentence;
-        } else {
-            chunk += sentence;
-        }
-    }
-    if (chunk) {
-        chunks.push(chunk);
-    }
-    return chunks;
-}
-
-// Event listener for the "Export User Stories" button (TXT)
-document.getElementById('exportButton').addEventListener('click', () => {
-    const userStories = document.getElementById('userStoriesOutput').textContent;
-    if (userStories.trim() === '') {
-        alert('Keine User Stories zum Herunterladen vorhanden.');
-        return;
-    }
-    const blob = new Blob([userStories], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'user_stories.txt';
-    link.click();
-});
-
-// Event listener for the "Export User Stories as JSON" button
-document.getElementById('exportJSONButton').addEventListener('click', () => {
-    const epicData = JSON.parse(localStorage.getItem('epicData')) || {};
-    if (Object.keys(epicData).length === 0) {
-        alert('Keine User Stories zum Exportieren vorhanden.');
-        return;
-    }
-    const blob = new Blob([JSON.stringify(epicData, null, 2)], { type: 'application/json;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'user_stories.json';
-    link.click();
-});
-
-// Event listener for the "Copy User Stories" button
-document.getElementById('copyButton').addEventListener('click', () => {
-    const userStories = document.getElementById('userStoriesOutput').textContent;
-    if (userStories.trim() === '') {
-        alert('Keine User Stories zum Kopieren vorhanden.');
-        return;
-    }
-    navigator.clipboard.writeText(userStories)
-        .then(() => {
-            alert('User Stories wurden in die Zwischenablage kopiert.');
-        })
-        .catch(err => {
-            alert('Fehler beim Kopieren in die Zwischenablage.');
-            console.error('Clipboard error:', err);
-        });
-});
-
-// Event listener for the file input
-document.getElementById('fileInput').addEventListener('change', function () {
-    const file = this.files[0];
-    const fileNameDisplay = document.getElementById('fileName');
-    if (file) {
-        fileNameDisplay.textContent = `Ausgewählte Datei: ${file.name}`;
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            document.getElementById('documentInput').value = e.target.result;
-        };
-        reader.readAsText(file);
+  for (const sentence of sentences) {
+    if ((chunk + sentence).length > maxChunkSize) {
+      chunks.push(chunk);
+      chunk = sentence;
     } else {
-        fileNameDisplay.textContent = '';
+      chunk += sentence;
     }
-});
+  }
+  if (chunk) {
+    chunks.push(chunk);
+  }
+  return chunks;
+}
 
-// Event listener for the "Clear" button
-document.getElementById('clearButton').addEventListener('click', () => {
-    document.getElementById('documentInput').value = '';
-    document.getElementById('fileInput').value = '';
-    document.getElementById('fileName').textContent = '';
-});
+// Display User Stories
+function displayUserStories(stories) {
+  if (stories.length === 0) {
+    userStoriesOutput.textContent = 'Keine User Stories gefunden.';
+    return;
+  }
 
-// Epic management
-const epicInput = document.getElementById('epicInput');
-const epicSelect = document.getElementById('epicSelect');
-const addEpicButton = document.getElementById('addEpicButton');
+  userStoriesOutput.innerHTML = '';
+  stories.forEach((story, index) => {
+    const storyElement = document.createElement('p');
+    storyElement.textContent = `${index + 1}. ${story.trim()}`;
+    userStoriesOutput.appendChild(storyElement);
+  });
+}
 
-// Load epics into the select dropdown
-function loadEpics() {
-    epics = JSON.parse(localStorage.getItem('epics')) || [];
-    epicSelect.innerHTML = '<option value="">-- Wählen Sie ein Epic --</option>';
-    epics.forEach(epic => {
-        const option = document.createElement('option');
-        option.value = epic;
-        option.textContent = epic;
-        epicSelect.appendChild(option);
+// Save User Stories to LocalStorage
+function saveUserStories(stories) {
+  const epicData = JSON.parse(localStorage.getItem('epicData')) || {};
+  epicData[currentEpic] = (epicData[currentEpic] || []).concat(stories);
+  localStorage.setItem('epicData', JSON.stringify(epicData));
+}
+
+// Handle File Upload
+function handleFileUpload() {
+  const file = fileInput.files[0];
+  if (file) {
+    fileNameDisplay.textContent = `${file.name}`;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      documentInput.value = e.target.result;
+    };
+    reader.readAsText(file);
+  } else {
+    fileNameDisplay.textContent = '';
+  }
+}
+
+// Clear Inputs
+function clearInputs() {
+  documentInput.value = '';
+  fileInput.value = '';
+  fileNameDisplay.textContent = '';
+  epicInput.value = '';
+  epicSelect.value = '';
+  currentEpic = '';
+  userStoriesOutput.textContent = '';
+  resultsSection.classList.add('d-none');
+  showToast('Eingaben gelöscht.', 'info');
+}
+
+// Copy User Stories to Clipboard
+function copyUserStories() {
+  const stories = Array.from(userStoriesOutput.querySelectorAll('p'))
+    .map(p => p.textContent)
+    .join('\n\n');
+  if (stories.trim() === '') {
+    showToast('Keine User Stories zum Kopieren vorhanden.', 'danger');
+    return;
+  }
+  navigator.clipboard.writeText(stories)
+    .then(() => {
+      showToast('User Stories wurden in die Zwischenablage kopiert.');
+    })
+    .catch(err => {
+      showToast('Fehler beim Kopieren in die Zwischenablage.', 'danger');
+      console.error('Clipboard error:', err);
     });
 }
 
-loadEpics();
-
-// Event listener for adding/selecting an epic
-addEpicButton.addEventListener('click', () => {
-    const epicName = epicInput.value.trim() || epicSelect.value;
-    if (epicName === '') {
-        alert('Bitte geben Sie einen Epic-Namen ein oder wählen Sie einen aus.');
-        return;
-    }
-
-    currentEpic = epicName;
-
-    if (!epics.includes(epicName)) {
-        epics.push(epicName);
-        localStorage.setItem('epics', JSON.stringify(epics));
-        loadEpics();
-    }
-
-    alert(`Epic "${currentEpic}" ausgewählt.`);
-    epicInput.value = '';
-    epicSelect.value = currentEpic;
-
-    // Update visualization
-    updateVisualization();
-});
-
-// Visualization using Chart.js
-let epicChart;
-
-function updateVisualization() {
-    const epicData = JSON.parse(localStorage.getItem('epicData')) || {};
-
-    const labels = Object.keys(epicData);
-    const data = labels.map(epic => epicData[epic].length);
-
-    const ctx = document.getElementById('epicChart').getContext('2d');
-
-    if (epicChart) {
-        epicChart.destroy();
-    }
-
-    epicChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Anzahl der User Stories',
-                data: data,
-                backgroundColor: 'rgba(0, 123, 255, 0.5)',
-                borderColor: 'rgba(0, 123, 255, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    integer: true
-                }
-            }
-        }
-    });
+// Export User Stories as TXT
+function exportUserStoriesTXT() {
+  const stories = Array.from(userStoriesOutput.querySelectorAll('p'))
+    .map(p => p.textContent)
+    .join('\n\n');
+  if (stories.trim() === '') {
+    showToast('Keine User Stories zum Herunterladen vorhanden.', 'danger');
+    return;
+  }
+  const blob = new Blob([stories], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'user_stories.txt';
+  link.click();
+  showToast('User Stories als TXT heruntergeladen.');
 }
 
-// Initial visualization
-updateVisualization();
+// Export User Stories as JSON
+function exportUserStoriesJSON() {
+  const epicData = JSON.parse(localStorage.getItem('epicData')) || {};
+  if (Object.keys(epicData).length === 0) {
+    showToast('Keine User Stories zum Exportieren vorhanden.', 'danger');
+    return;
+  }
+  const blob = new Blob([JSON.stringify(epicData, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'user_stories.json';
+  link.click();
+  showToast('User Stories als JSON heruntergeladen.');
+}
