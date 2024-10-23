@@ -1,0 +1,144 @@
+/* styles.css */
+
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding-top: 70px; /* Space for fixed navbar */
+}
+
+h1, h3 {
+    color: #343a40;
+}
+
+.container {
+    max-width: 960px;
+}
+
+/* Navigation Bar */
+.navbar-brand {
+    font-weight: bold;
+}
+
+.nav-link.active {
+    font-weight: bold;
+    color: #007bff !important;
+}
+
+/* Card Styles */
+.card {
+    margin-bottom: 20px;
+}
+
+.card-title {
+    color: #007bff;
+}
+
+.card-text {
+    color: #495057;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+/* Forms */
+.form-label {
+    font-weight: 500;
+    color: #343a40;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: none;
+}
+
+/* Epic Management */
+.epic-drop-zone {
+    border: 2px dashed #ced4da;
+    min-height: 150px;
+}
+
+.epic-drop-zone:hover {
+    background-color: #e9ecef;
+}
+
+.epic-drop-zone .card-header {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.story-list .card {
+    cursor: move;
+}
+
+/* Drag-and-Drop Indication */
+.story-card.ui-draggable-dragging,
+.story-list .card.ui-draggable-dragging {
+    opacity: 0.5;
+}
+
+/* Search Bar */
+#search-bar {
+    width: 100%;
+}
+
+/* Footer */
+.footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 15px 0;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+textarea {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+#userStoriesOutput {
+    margin-top: 20px;
+    white-space: pre-wrap;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
